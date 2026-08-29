@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { mode?: "signin" | "signup" } => {
     return {
-      mode: search.mode === "signup" ? "signup" : "signin",
+      mode: search["mode"] === "signup" ? "signup" : "signin",
     };
   },
   head: () => ({

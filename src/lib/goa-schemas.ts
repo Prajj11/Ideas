@@ -48,6 +48,7 @@ export type PlaceInsights = z.infer<typeof placeInsightsSchema>;
 export const itinerarySchema = z.object({
   title: z.string(),
   overview: z.string(),
+  date: z.string().optional(),
   stops: z
     .array(
       z.object({
@@ -57,6 +58,8 @@ export const itinerarySchema = z.object({
         duration: z.string(),
         description: z.string(),
         travel_note: z.string(),
+        lat: z.number().optional(),
+        lng: z.number().optional(),
       }),
     )
     .min(3)

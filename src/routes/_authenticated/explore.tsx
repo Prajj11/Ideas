@@ -22,6 +22,12 @@ const bandStyles: Record<string, string> = {
   packed: "bg-destructive/10 text-destructive",
 };
 
+const severityStyles: Record<string, string> = {
+  low: "border-l-blue-500",
+  medium: "border-l-amber-500",
+  high: "border-l-destructive",
+};
+
 const ALL_FEATURED = [
   { name: "Baga Beach", desc: "Famous for nightlife, water sports, and vibrant shacks.", img: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=60&w=400&auto=format&fit=crop" },
   { name: "Fort Aguada", desc: "17th-century Portuguese fort with stunning ocean views.", img: "https://images.unsplash.com/photo-1590050752117-238cb0fb12b1?q=60&w=400&auto=format&fit=crop" },

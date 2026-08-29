@@ -116,8 +116,9 @@ function LiveTrackingPage() {
         const newLng = member.lng + (Math.random() - 0.5) * 0.0005;
         
         // Update marker
-        if (markersRef.current[member.id]) {
-          markersRef.current[member.id].setLatLng([newLat, newLng]);
+        const marker = markersRef.current[member.id];
+        if (marker) {
+          marker.setLatLng([newLat, newLng]);
         }
         
         return { ...member, lat: newLat, lng: newLng };
@@ -132,7 +133,7 @@ function LiveTrackingPage() {
     if (!newName || !newPhone) return;
 
     // Start them near user or default center
-    const baseLocation = myLocation || defaultCenter;
+    const [baseLat, baseLng] = myLocation || defaultCenter;
     const offsetLat = (Math.random() - 0.5) * 0.01;
     const offsetLng = (Math.random() - 0.5) * 0.01;
 
@@ -140,8 +141,8 @@ function LiveTrackingPage() {
       id: Math.random().toString(36).substr(2, 9),
       name: newName,
       phone: newPhone,
-      lat: baseLocation[0] + offsetLat,
-      lng: baseLocation[1] + offsetLng,
+      lat: (baseLat ?? 15.2993) + offsetLat,
+      lng: (baseLng ?? 74.124) + offsetLng,
     };
 
     setMembers([...members, newMember]);

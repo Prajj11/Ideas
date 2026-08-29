@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { Loader2, Navigation, Search, ShieldCheck } from "lucide-react";
+import { Compass, Loader2, Navigation, Search, ShieldCheck } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import L from "leaflet";
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/_authenticated/map")({
 type Hit = { id: string; name: string; address: string; lat: number; lng: number };
 type Scored = {
   label: string;
-  kind: "fastest" | "safer";
+  kind: "fastest" | "safer" | "alt";
   distanceKm: number;
   durationMin: number;
   safetyScore: number;
@@ -132,7 +132,7 @@ function MapPage() {
         if (!pathCoords || pathCoords.length === 0) return;
         
         const line = L.polyline(pathCoords, {
-          color: i === selected ? (r.kind === "safer" ? "#0f766e" : "#e2725b") : "#9ca3af",
+          color: i === selected ? (r.kind === "safer" ? "#0f766e" : r.kind === "alt" ? "#7c3aed" : "#e2725b") : "#9ca3af",
           opacity: i === selected ? 1 : 0.5,
           weight: i === selected ? 6 : 4,
         }).addTo(map);
@@ -232,6 +232,8 @@ function MapPage() {
                 <span className={`flex items-center gap-2.5 text-lg font-bold tracking-tight ${i === selected ? "text-primary" : "text-foreground group-hover:text-primary transition-colors"}`}>
                   {r.kind === "safer" ? (
                     <ShieldCheck className={`size-5 ${i === selected ? "text-primary" : "text-primary/70"}`} />
+                  ) : r.kind === "alt" ? (
+                    <Compass className={`size-5 ${i === selected ? "text-purple-600" : "text-purple-600/70"}`} />
                   ) : (
                     <Navigation className={`size-5 ${i === selected ? "text-accent" : "text-accent/70"}`} />
                   )}
