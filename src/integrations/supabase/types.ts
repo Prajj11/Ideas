@@ -140,6 +140,42 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_places: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          image_url: string | null
+          lat: number | null
+          lng: number | null
+          notes: string | null
+          place_name: string
+          user_id: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          place_name: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          lat?: number | null
+          lng?: number | null
+          notes?: string | null
+          place_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       travellers: {
         Row: {
           age: number | null

@@ -97,6 +97,103 @@ export const getPlaceInsights = createServerFn({ method: "POST" })
       while (activities.length < 3) activities.push({ name: "Local Market Walk", description: "Explore the vibrant streets and local vendors.", tip: "Bargaining is expected." });
 
       const isBeach = data.place.toLowerCase().includes("beach");
+      const placeLower = data.place.toLowerCase();
+
+      // Smart Transport Advice Generator
+      let transportAdvice: {
+        best_mode: "scooter" | "car" | "taxi" | "bus" | "ferry" | "walk";
+        title: string;
+        description: string;
+        estimated_cost: string;
+        parking_ease: "easy" | "moderate" | "difficult" | "paid";
+        parking_tip: string;
+        road_condition: string;
+        safety_tips: string[];
+        public_transit?: string;
+      };
+
+      if (placeLower.includes("dudhsagar") || placeLower.includes("waterfall") || placeLower.includes("sanctuary")) {
+        transportAdvice = {
+          best_mode: "car",
+          title: "4x4 Jungle Jeep Safari & Self-Drive Car",
+          description: "Private vehicles are stopped at Kolem. An authorized 4x4 forest jeep safari is mandatory to cross the rocky riverbeds inside the wildlife sanctuary.",
+          estimated_cost: "₹500 - ₹800 / person for Jeep Safari",
+          parking_ease: "moderate",
+          parking_tip: "Park at the official Kolem Jeep Association parking ground before boarding your assigned safari jeep.",
+          road_condition: "National Highway up to Kolem, rugged unpaved jungle track inside sanctuary",
+          safety_tips: [
+            "Lifejackets are strictly mandatory when swimming near the waterfall base pool",
+            "Book early morning slots (8 AM - 10 AM) to avoid peak jeep waiting queues",
+            "Carry a waterproof pouch for phones and electronic keys",
+          ],
+          public_transit: "Goa Express train stops directly at Kolem Railway Station.",
+        };
+      } else if (placeLower.includes("panjim") || placeLower.includes("old goa") || placeLower.includes("fontainhas") || placeLower.includes("church")) {
+        transportAdvice = {
+          best_mode: "walk",
+          title: "Walking, Heritage Stroll & Rental Scooter",
+          description: "Best experienced on foot to appreciate the colorful 18th-century Portuguese colonial villas, quaint bakeries, and heritage churches without parking stress.",
+          estimated_cost: "Free on foot / ₹350 - ₹500/day for scooter rental",
+          parking_ease: "difficult",
+          parking_tip: "Panjim streets are narrow with designated paid parking zones. Use the Multi-Level Car Parking (MLCP) near Santa Monica jetty or Patto plaza.",
+          road_condition: "Paved municipal streets with pedestrian sidewalks and heritage alleys",
+          safety_tips: [
+            "Wear comfortable walking shoes for cobblestone paths",
+            "Watch out for one-way traffic signage across central Panjim streets",
+            "Maintain quiet decorum in residential heritage neighborhoods",
+          ],
+          public_transit: "Frequent Kadamba city electric buses connect Panjim Bus Stand to Old Goa every 10 minutes.",
+        };
+      } else if (placeLower.includes("island") || placeLower.includes("divar") || placeLower.includes("chorao")) {
+        transportAdvice = {
+          best_mode: "ferry",
+          title: "Goa River Ferry (Ro-Ro) & Scooter",
+          description: "Hop on the government river ferry across the Mandovi river with your vehicle. A truly authentic and scenic Goan travel experience.",
+          estimated_cost: "Free for passengers & two-wheelers / ₹10 for cars",
+          parking_ease: "easy",
+          parking_tip: "Ample roadside parking near local village chapels and scenic viewpoints.",
+          road_condition: "Pristine, scenic village roads with peaceful paddy fields and zero highway traffic",
+          safety_tips: [
+            "Switch off vehicle engines while stationed on the ferry deck",
+            "Follow the ferry master's hand signals when boarding and disembarking",
+            "Last return ferries usually operate until midnight",
+          ],
+          public_transit: "Regular government ferries run every 15-20 minutes from Ribandar, Old Goa, and Betim jetties.",
+        };
+      } else if (placeLower.includes("palolem") || placeLower.includes("agonda") || placeLower.includes("cola") || placeLower.includes("south goa") || placeLower.includes("margao")) {
+        transportAdvice = {
+          best_mode: "car",
+          title: "Self-Drive Car or Cruiser Motorbike",
+          description: "South Goa's expansive scenic coastlines are spaced further apart. A self-drive hatchback/SUV or cruiser bike is ideal for the 1.5 - 2 hour scenic drive.",
+          estimated_cost: "₹1,200 - ₹1,800/day for car / ₹450 - ₹600/day for bike",
+          parking_ease: "moderate",
+          parking_tip: "Beachside open ground parking lots charge a nominal ₹50 - ₹100 full-day fee.",
+          road_condition: "Smooth 4-lane NH66 Highway transitioning into winding coastal ghat roads",
+          safety_tips: [
+            "Drive cautiously around the sharp bends of Karmal Ghat",
+            "Street lighting is minimal on rural South Goa roads after sunset",
+            "Refuel before venturing into remote coves like Butterfly Beach",
+          ],
+          public_transit: "Direct Kadamba express buses operate from Panjim/Margao to Canacona Bus Stand.",
+        };
+      } else {
+        // North Goa Beaches / General
+        transportAdvice = {
+          best_mode: "scooter",
+          title: "Rental Scooter (Activa / Dio)",
+          description: "Renting a two-wheeler is the most efficient and popular way to explore Goa's bustling beach belt, avoiding narrow lane traffic jams.",
+          estimated_cost: "₹350 - ₹500 / day (+ petrol)",
+          parking_ease: "paid",
+          parking_tip: "Look for authorized two-wheeler parking lots (₹20 - ₹30) near the main beach access lanes. Cars struggle in tight alleys.",
+          road_condition: "Narrow coastal lanes with heavy pedestrian and tourist traffic",
+          safety_tips: [
+            "Helmets are strictly mandatory by Goa Traffic Police (₹1,000 fine for violations)",
+            "Never drive rental vehicles onto beach sand (strictly prohibited with heavy fines)",
+            "Carry your valid driving license and vehicle registration document at all times",
+          ],
+          public_transit: "Kadamba AC shuttles run every 30 mins from Panjim/Mapusa bus terminus to Calangute Circle.",
+        };
+      }
 
       return {
         place: data.place,
@@ -104,6 +201,7 @@ export const getPlaceInsights = createServerFn({ method: "POST" })
         eat: eat.slice(0, 5),
         activities: activities.slice(0, 5),
         sights: sights.slice(0, 5),
+        transport_advice: transportAdvice,
         crowd: {
           percent: 65,
           band: "moderate",
@@ -552,18 +650,22 @@ export const generateItinerary = createServerFn({ method: "POST" })
       }
 
       // 3. Gather candidate POIs (Curated database + Live search results)
-      const curatedList = GOA_CURATED_PLACES[data.place] ?? GOA_CURATED_PLACES["Panjim"];
-      const allCandidates = [...curatedList, ...livePOIs];
+      const curatedList: CuratedPOI[] = GOA_CURATED_PLACES[data.place] || GOA_CURATED_PLACES["Panjim"] || [];
+      const allCandidates: CuratedPOI[] = [...curatedList, ...livePOIs];
 
       // Filter and rank candidate spots according to selected interests
       const matchedSpots = allCandidates.filter((poi) =>
-        poi.interests.some((interest) => data.interests.includes(interest)),
+        poi.interests.some((interest: string) => data.interests.includes(interest)),
       );
       const candidatesToUse = matchedSpots.length >= 3 ? matchedSpots : allCandidates;
 
       // 4. Time Math & Schedule Generation based on exact user hours free
-      const [startH, startM] = (data.startTime || "09:00").split(":").map(Number);
-      const initialMinutes = (isNaN(startH) ? 9 : startH) * 60 + (isNaN(startM) ? 0 : startM);
+      const timeParts = (data.startTime || "09:00").split(":");
+      const parsedH = timeParts[0] ? parseInt(timeParts[0], 10) : 9;
+      const parsedM = timeParts[1] ? parseInt(timeParts[1], 10) : 0;
+      const startH = isNaN(parsedH) ? 9 : parsedH;
+      const startM = isNaN(parsedM) ? 0 : parsedM;
+      const initialMinutes = startH * 60 + startM;
       let currentMinutes = initialMinutes;
       const targetEndMinutes = initialMinutes + data.hours * 60;
 

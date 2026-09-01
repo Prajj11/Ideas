@@ -14,12 +14,27 @@ export const recommendationSchema = z.object({
   tip: z.string(),
 });
 
+export const transportAdviceSchema = z.object({
+  best_mode: z.enum(["scooter", "car", "taxi", "bus", "ferry", "walk"]),
+  title: z.string(),
+  description: z.string(),
+  estimated_cost: z.string(),
+  parking_ease: z.enum(["easy", "moderate", "difficult", "paid"]),
+  parking_tip: z.string(),
+  road_condition: z.string(),
+  safety_tips: z.array(z.string()),
+  public_transit: z.string().optional(),
+});
+
+export type TransportAdvice = z.infer<typeof transportAdviceSchema>;
+
 export const placeInsightsSchema = z.object({
   place: z.string(),
   summary: z.string(),
   eat: z.array(recommendationSchema).min(3).max(6),
   activities: z.array(recommendationSchema).min(3).max(6),
   sights: z.array(recommendationSchema).min(3).max(6),
+  transport_advice: transportAdviceSchema.optional(),
   crowd: z.object({
     percent: z.number().min(0).max(100),
     band: crowdBand,
@@ -69,15 +84,29 @@ export const itinerarySchema = z.object({
 
 export type Itinerary = z.infer<typeof itinerarySchema>;
 
+export const routeStepSchema = z.object({
+  instruction: z.string(),
+  distanceMeters: z.number(),
+  durationSeconds: z.number(),
+  maneuverType: z.string(),
+  maneuverModifier: z.string().optional(),
+  name: z.string(),
+  location: z.tuple([z.number(), z.number()]).optional(), // [lat, lng]
+});
+
+export type RouteStep = z.infer<typeof routeStepSchema>;
+
 export const routeOptionSchema = z.object({
   label: z.string(),
-  kind: z.enum(["fastest", "safer"]),
+  kind: z.enum(["fastest", "safer", "alt"]),
   distance_km: z.number(),
   duration_min: z.number(),
   safety_score: z.number(),
   reasons: z.array(z.string()),
   polyline: z.string(),
   summary: z.string(),
+  steps: z.array(routeStepSchema).optional(),
+  googleMapsUrl: z.string().optional(),
 });
 
 export type RouteOption = z.infer<typeof routeOptionSchema>;

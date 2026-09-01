@@ -1,7 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import QRCode from "qrcode";
-import { Info, Loader2, Plus, Printer, Trash2 } from "lucide-react";
+import {
+  Info,
+  Loader2,
+  Plus,
+  Printer,
+  QrCode,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  Users,
+  X,
+  Phone,
+  CheckCircle2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -28,6 +41,7 @@ type TagRow = {
   staying_at: string | null;
   medical_notes: string | null;
   description: string | null;
+  created_at: string;
 };
 
 function TagCard({ tag, onDelete }: { tag: TagRow; onDelete: (id: string) => void }) {
@@ -40,39 +54,89 @@ function TagCard({ tag, onDelete }: { tag: TagRow; onDelete: (id: string) => voi
   }, [url]);
 
   return (
-    <div className="tag-card rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl p-5 shadow-sm">
-      <div className="flex items-start gap-5">
-        <div className="flex flex-col items-center gap-2">
+    <div className="tag-card group relative overflow-hidden rounded-3xl border border-border/60 bg-card/80 backdrop-blur-2xl p-6 shadow-sm transition-all hover:shadow-xl hover:border-emerald/40">
+      <div className="flex flex-col sm:flex-row items-start gap-5">
+        {/* QR Code & Token Box */}
+        <div className="flex flex-col items-center gap-2.5 shrink-0 mx-auto sm:mx-0">
           {qr ? (
-            <img src={qr} alt={`QR code for ${tag.person_name}`} className="size-28 rounded-lg border border-border/50 shadow-sm" />
+            <div className="p-2 rounded-2xl bg-white shadow-md border border-border/40">
+              <img
+                src={qr}
+                alt={`QR code for ${tag.person_name}`}
+                className="size-28 rounded-lg object-contain"
+              />
+            </div>
           ) : (
-            <div className="size-28 animate-pulse rounded-lg bg-secondary" />
+            <div className="size-32 rounded-2xl shimmer-skeleton border border-border/50" />
           )}
-          <div className="bg-primary/10 text-primary font-mono font-bold px-3 py-1 rounded-md tracking-widest text-lg w-full text-center border border-primary/20 shadow-sm">
-            {tag.token}
+
+          <div className="rounded-xl bg-primary/10 border border-primary/20 px-3 py-1 text-center font-mono font-bold text-sm tracking-widest text-primary w-full">
+            OTP: {tag.token}
           </div>
         </div>
-        <div className="min-w-0 flex-1">
-          <p className="text-xs tracking-wider text-muted-foreground uppercase font-semibold">{tag.category}</p>
-          <p className="truncate text-xl font-bold tracking-tight">{tag.person_name}</p>
-          {tag.person_age != null && <p className="text-sm text-muted-foreground font-medium">Age {tag.person_age}</p>}
-          <p className="mt-1.5 text-sm font-medium">
-            Contact: {tag.guardian_name} <span className="text-muted-foreground mx-1">•</span> {tag.guardian_phone}
-          </p>
-          {tag.staying_at && <p className="text-sm text-muted-foreground">Staying at {tag.staying_at}</p>}
-          
-          <div className="mt-3 bg-orange-500/10 text-orange-700 dark:text-orange-400 p-2.5 rounded-lg border border-orange-500/20 text-xs font-medium leading-relaxed">
-            <span className="block mb-0.5 opacity-80">Write on wristband:</span>
-            "If found, visit <strong>website.com/find</strong> and enter OTP: <strong className="text-base tracking-widest">{tag.token}</strong>"
+
+        {/* Member Details */}
+        <div className="min-w-0 flex-1 w-full">
+          <div className="flex items-center justify-between gap-2">
+            <span className="rounded-full bg-emerald/10 text-emerald border border-emerald/20 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">
+              {tag.category === "kid" ? "Child Tag" : tag.category === "senior" ? "Elderly Tag" : "Member Tag"}
+            </span>
+            <span className="text-[11px] text-muted-foreground font-medium">
+              Created {new Date(tag.created_at).toLocaleDateString()}
+            </span>
+          </div>
+
+          <h3 className="mt-2 text-xl font-bold font-display text-foreground">{tag.person_name}</h3>
+          {tag.person_age != null && (
+            <p className="text-xs font-semibold text-muted-foreground">Age: {tag.person_age} years</p>
+          )}
+
+          <div className="mt-3 space-y-1 text-xs text-foreground/90">
+            <p className="font-medium">
+              <span className="text-muted-foreground">Guardian:</span> {tag.guardian_name} ({tag.guardian_phone})
+            </p>
+            {tag.alt_phone && (
+              <p>
+                <span className="text-muted-foreground">Alt Contact:</span> {tag.alt_phone}
+              </p>
+            )}
+            {tag.staying_at && (
+              <p>
+                <span className="text-muted-foreground">Staying At:</span> {tag.staying_at}
+              </p>
+            )}
+            {tag.medical_notes && (
+              <p className="text-coral font-medium">
+                <span className="text-muted-foreground">Medical Alert:</span> {tag.medical_notes}
+              </p>
+            )}
+          </div>
+
+          {/* Wristband Instructions */}
+          <div className="mt-4 rounded-2xl bg-amber/10 border border-amber/20 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-200">
+            <p className="font-bold mb-0.5">Printed Wristband Message:</p>
+            "If lost, scan QR or visit <strong>safr.in/find</strong> & enter OTP: <strong>{tag.token}</strong>"
           </div>
         </div>
       </div>
-      <div className="no-print mt-4 flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => window.print()}>
-          <Printer className="size-4" /> Print
+
+      {/* Action Buttons */}
+      <div className="no-print mt-5 pt-4 border-t border-border/40 flex items-center justify-between gap-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => window.print()}
+          className="rounded-full font-bold text-xs gap-1.5 shadow-sm hover:border-primary/40"
+        >
+          <Printer className="size-3.5" /> Print Wristband
         </Button>
-        <Button size="sm" variant="ghost" className="text-destructive" onClick={() => onDelete(tag.id)}>
-          <Trash2 className="size-4" /> Delete
+        <Button
+          size="sm"
+          variant="ghost"
+          className="rounded-full font-bold text-xs text-destructive hover:bg-destructive/10"
+          onClick={() => onDelete(tag.id)}
+        >
+          <Trash2 className="size-3.5 mr-1" /> Remove
         </Button>
       </div>
     </div>
@@ -94,7 +158,7 @@ function SafetyTags() {
     description: "",
   });
 
-  const { data: tags, isLoading } = useQuery({
+  const { data: tags = [], isLoading } = useQuery({
     queryKey: ["safety-tags"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -102,22 +166,23 @@ function SafetyTags() {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as TagRow[];
+      return (data ?? []) as TagRow[];
     },
   });
 
-  const create = useMutation({
+  const createTag = useMutation({
     mutationFn: async () => {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) throw new Error("Not signed in");
-      
-      const shortToken = Math.random().toString(36).substring(2, 8).toUpperCase();
-      
-      const { error } = await supabase.from("safety_tags").insert({
+
+      // Generate a random 6-character alphanumeric OTP token
+      const token = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      const { data, error } = await supabase.from("safety_tags").insert({
         user_id: userData.user.id,
-        token: shortToken,
+        token,
         person_name: form.person_name.trim(),
-        person_age: form.person_age ? Number(form.person_age) : null,
+        person_age: form.person_age ? parseInt(form.person_age, 10) : null,
         category: form.category,
         guardian_name: form.guardian_name.trim(),
         guardian_phone: form.guardian_phone.trim(),
@@ -126,184 +191,238 @@ function SafetyTags() {
         medical_notes: form.medical_notes.trim() || null,
         description: form.description.trim() || null,
       });
+
       if (error) throw error;
+      return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["safety-tags"] });
+      toast.success("SafeTag wristband created successfully!");
       setShowForm(false);
-      setForm({ ...form, person_name: "", person_age: "", medical_notes: "", description: "" });
-      toast.success("QR tag created");
+      setForm({
+        person_name: "",
+        person_age: "",
+        category: "kid",
+        guardian_name: "",
+        guardian_phone: "",
+        alt_phone: "",
+        staying_at: "",
+        medical_notes: "",
+        description: "",
+      });
+      queryClient.invalidateQueries({ queryKey: ["safety-tags"] });
     },
-    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not create tag"),
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to create tag"),
   });
 
-  const remove = useMutation({
+  const deleteTag = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("safety_tags").delete().eq("id", id);
       if (error) throw error;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["safety-tags"] }),
+    onSuccess: () => {
+      toast.info("SafeTag removed");
+      queryClient.invalidateQueries({ queryKey: ["safety-tags"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Failed to delete tag"),
   });
 
   return (
-    <AppShell title="QR safety tags" subtitle="If they get lost, someone can reach you" back>
-      <style>{`@media print { .no-print { display: none !important } body { background: #fff } }`}</style>
+    <AppShell title="Family SafeTag Studio" subtitle="Printable QR wristbands with Zero-Knowledge privacy" back>
+      {/* Privacy Guarantee Header Card */}
+      <div className="rounded-3xl border border-border/60 bg-card/75 backdrop-blur-2xl p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald/10 px-3 py-0.5 text-xs font-bold text-emerald">
+              <ShieldCheck className="size-3.5" /> Zero-Knowledge Privacy Architecture
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold font-display text-foreground mt-2">
+              Protect Kids & Senior Travelers
+            </h2>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted-foreground leading-relaxed max-w-xl">
+              Generate water-resistant QR wristbands or short 6-digit OTP tags. If a member gets separated in crowded markets or beaches, finders can notify you instantly without ever seeing your private phone number or hotel address.
+            </p>
+          </div>
 
-      <div className="no-print rounded-2xl border border-border bg-secondary/50 p-5">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Info className="size-4 text-primary" /> How this works
-        </h2>
-        <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-          <li>Add each child or elderly traveller and your contact number.</li>
-          <li>We create a private QR code — scanning it never shows your phone number, name, or where you're staying.</li>
-          <li>Print the tag and pin it inside a pocket, on a wristband, or on a bag.</li>
-          <li>Anyone who finds them can scan it to notify you directly — you stay in control of the contact.</li>
-        </ol>
-        <p className="mt-2 text-xs text-muted-foreground">
-          A stranger who scans the tag only sees a confirmation and a "Notify Family" button —
-          never your phone number, address, or medical notes.
-        </p>
+          <Button
+            onClick={() => setShowForm(true)}
+            className="rounded-full font-bold px-6 bg-primary text-primary-foreground shadow-md transition-all hover:scale-105 active:scale-95 shrink-0"
+          >
+            <Plus className="size-4 mr-1.5" /> Create New Tag
+          </Button>
+        </div>
       </div>
 
-      {!showForm && (
-        <Button className="no-print mt-4 w-full" onClick={() => setShowForm(true)}>
-          <Plus className="size-4" /> Create a QR tag
-        </Button>
-      )}
-
+      {/* Creation Modal / Drawer */}
       {showForm && (
-        <form
-          className="no-print mt-4 space-y-4 rounded-2xl border border-border bg-card p-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!form.person_name.trim() || !form.guardian_name.trim() || !form.guardian_phone.trim()) {
-              toast.error("Name and contact details are required");
-              return;
-            }
-            create.mutate();
-          }}
-        >
-          <div className="space-y-1.5">
-            <Label>Who is this tag for?</Label>
-            <div className="flex gap-2">
-              {(["kid", "senior", "other"] as const).map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setForm({ ...form, category: c })}
-                  className={`rounded-full px-3 py-1.5 text-sm capitalize ${
-                    form.category === c ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground"
-                  }`}
-                >
-                  {c}
-                </button>
-              ))}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl border border-border/60 bg-card p-6 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between border-b border-border/40 pb-4">
+              <h3 className="text-xl font-bold font-display text-foreground">New Family SafeTag</h3>
+              <button
+                onClick={() => setShowForm(false)}
+                className="rounded-full p-2 text-muted-foreground hover:bg-secondary transition-colors"
+              >
+                <X className="size-5" />
+              </button>
             </div>
+
+            <form
+              className="mt-5 space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                createTag.mutate();
+              }}
+            >
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="person_name" className="text-xs font-bold uppercase text-muted-foreground">
+                    Member Name *
+                  </Label>
+                  <Input
+                    id="person_name"
+                    required
+                    value={form.person_name}
+                    onChange={(e) => setForm({ ...form, person_name: e.target.value })}
+                    placeholder="e.g. Aarav"
+                    className="rounded-xl bg-secondary/40 border-border/60"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="person_age" className="text-xs font-bold uppercase text-muted-foreground">
+                    Age (Optional)
+                  </Label>
+                  <Input
+                    id="person_age"
+                    type="number"
+                    min={1}
+                    max={120}
+                    value={form.person_age}
+                    onChange={(e) => setForm({ ...form, person_age: e.target.value })}
+                    placeholder="e.g. 7"
+                    className="rounded-xl bg-secondary/40 border-border/60"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Category</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: "kid", label: "Child" },
+                    { id: "senior", label: "Elderly" },
+                    { id: "adult", label: "Adult" },
+                  ].map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setForm({ ...form, category: cat.id })}
+                      className={`rounded-xl py-2 text-xs font-bold transition-all ${
+                        form.category === cat.id
+                          ? "bg-primary text-primary-foreground shadow-xs scale-102"
+                          : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="guardian_name" className="text-xs font-bold uppercase text-muted-foreground">
+                    Guardian Name *
+                  </Label>
+                  <Input
+                    id="guardian_name"
+                    required
+                    value={form.guardian_name}
+                    onChange={(e) => setForm({ ...form, guardian_name: e.target.value })}
+                    placeholder="e.g. Priya Sharma"
+                    className="rounded-xl bg-secondary/40 border-border/60"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="guardian_phone" className="text-xs font-bold uppercase text-muted-foreground">
+                    Phone Number *
+                  </Label>
+                  <Input
+                    id="guardian_phone"
+                    type="tel"
+                    required
+                    value={form.guardian_phone}
+                    onChange={(e) => setForm({ ...form, guardian_phone: e.target.value })}
+                    placeholder="+91 98765 43210"
+                    className="rounded-xl bg-secondary/40 border-border/60 font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="staying_at" className="text-xs font-bold uppercase text-muted-foreground">
+                  Goa Hotel / Resort (Kept Private)
+                </Label>
+                <Input
+                  id="staying_at"
+                  value={form.staying_at}
+                  onChange={(e) => setForm({ ...form, staying_at: e.target.value })}
+                  placeholder="e.g. Taj Holiday Village, Candolim"
+                  className="rounded-xl bg-secondary/40 border-border/60"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="medical_notes" className="text-xs font-bold uppercase text-muted-foreground">
+                  Medical Notes / Allergies (Optional)
+                </Label>
+                <Input
+                  id="medical_notes"
+                  value={form.medical_notes}
+                  onChange={(e) => setForm({ ...form, medical_notes: e.target.value })}
+                  placeholder="e.g. Asthmatic, Peanut allergy"
+                  className="rounded-xl bg-secondary/40 border-border/60"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={createTag.isPending}
+                className="w-full h-12 rounded-full font-bold bg-primary text-primary-foreground shadow-md transition-all mt-4"
+              >
+                {createTag.isPending ? <Loader2 className="size-4 animate-spin mr-2" /> : <QrCode className="size-4 mr-2" />}
+                Generate Printable SafeTag
+              </Button>
+            </form>
           </div>
-          <div className="grid grid-cols-[1fr_5rem] gap-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="pn">Their name</Label>
-              <Input
-                id="pn"
-                maxLength={60}
-                value={form.person_name}
-                onChange={(e) => setForm({ ...form, person_name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="pa">Age</Label>
-              <Input
-                id="pa"
-                type="number"
-                min={0}
-                max={120}
-                value={form.person_age}
-                onChange={(e) => setForm({ ...form, person_age: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="gn">Your name</Label>
-            <Input
-              id="gn"
-              maxLength={60}
-              value={form.guardian_name}
-              onChange={(e) => setForm({ ...form, guardian_name: e.target.value })}
-              required
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="gp">Your phone</Label>
-              <Input
-                id="gp"
-                type="tel"
-                maxLength={20}
-                value={form.guardian_phone}
-                onChange={(e) => setForm({ ...form, guardian_phone: e.target.value })}
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="ap">Backup phone</Label>
-              <Input
-                id="ap"
-                type="tel"
-                maxLength={20}
-                value={form.alt_phone}
-                onChange={(e) => setForm({ ...form, alt_phone: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="sa">Where you're staying (optional)</Label>
-            <Input
-              id="sa"
-              maxLength={120}
-              value={form.staying_at}
-              onChange={(e) => setForm({ ...form, staying_at: e.target.value })}
-              placeholder="Hotel name, Calangute"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="mn">Medical notes (optional)</Label>
-            <Textarea
-              id="mn"
-              maxLength={300}
-              value={form.medical_notes}
-              onChange={(e) => setForm({ ...form, medical_notes: e.target.value })}
-              placeholder="Asthma, allergic to peanuts…"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="de">What they look like (optional)</Label>
-            <Input
-              id="de"
-              maxLength={200}
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Red t-shirt, blue cap"
-            />
-          </div>
-          <div className="flex gap-2">
-            <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" className="flex-1" disabled={create.isPending}>
-              {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Generate QR tag
-            </Button>
-          </div>
-        </form>
+        </div>
       )}
 
-      <div className="mt-5 space-y-3">
-        {isLoading && <div className="h-32 animate-pulse rounded-2xl bg-secondary" />}
-        {tags?.map((tag) => (
-          <TagCard key={tag.id} tag={tag} onDelete={(id) => remove.mutate(id)} />
-        ))}
-        {tags?.length === 0 && !isLoading && (
-          <p className="py-6 text-center text-sm text-muted-foreground">No tags yet.</p>
+      {/* Active Tags List */}
+      <div className="mt-8 space-y-4">
+        {isLoading ? (
+          <div className="h-44 rounded-3xl shimmer-skeleton border border-border/50" />
+        ) : tags.length === 0 ? (
+          <div className="rounded-3xl border border-dashed border-border/70 p-10 text-center bg-card/40">
+            <QrCode className="size-12 mx-auto text-muted-foreground/40 mb-3" />
+            <h4 className="text-base font-bold text-foreground">No SafeTags generated yet</h4>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+              Create printable QR wristbands for your children or elders before heading to busy Goa beaches.
+            </p>
+            <Button
+              onClick={() => setShowForm(true)}
+              className="mt-5 rounded-full font-bold text-xs px-6"
+            >
+              Create first SafeTag
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2">
+            {tags.map((tag) => (
+              <TagCard key={tag.id} tag={tag} onDelete={(id) => deleteTag.mutate(id)} />
+            ))}
+          </div>
         )}
       </div>
     </AppShell>

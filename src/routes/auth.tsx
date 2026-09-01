@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Compass, ArrowLeft, Loader2, Sparkles, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,12 +16,8 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in — Safr — AI travel safety companion" },
-      { name: "description", content: "Sign in or create an account to plan safer trips." },
-      { property: "og:title", content: "Sign in — Safr — AI travel safety companion" },
-      { property: "og:description", content: "Sign in to plan safer trips." },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
+      { title: "Sign In | Safr — AI Travel Safety Companion" },
+      { name: "description", content: "Sign in or create an account to plan safer trips across Goa." },
     ],
   }),
   component: AuthPage,
@@ -71,7 +68,7 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(error instanceof Error ? error.message : "Authentication error");
     } finally {
       setBusy(false);
     }
@@ -79,18 +76,20 @@ function AuthPage() {
 
   if (sent) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-teal-50/30 px-5 relative overflow-hidden">
-        {/* Subtle Ambient Background Elements */}
-        <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-orange-400/10 blur-[80px] pointer-events-none z-0" />
-        <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 h-[600px] w-[600px] rounded-full bg-teal-400/10 blur-[100px] pointer-events-none z-0" />
-        
-        <div className="relative z-10 w-full max-w-sm rounded-3xl border border-border/50 bg-card/60 p-8 text-center shadow-xl backdrop-blur-xl">
-          <h1 className="text-2xl font-bold tracking-tight">Check your email</h1>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            We sent a confirmation link to <span className="font-medium text-foreground">{email}</span>. Open it to finish creating your account.
+      <main className="flex min-h-screen items-center justify-center bg-background px-5 py-12 relative overflow-hidden text-foreground selection:bg-primary/20">
+        <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-coral/15 blur-[120px]" />
+        <div className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-cyan/15 blur-[130px]" />
+
+        <div className="relative z-10 w-full max-w-sm rounded-3xl border border-border/60 bg-card/85 backdrop-blur-2xl p-8 text-center shadow-2xl">
+          <div className="size-12 rounded-2xl bg-emerald/10 text-emerald flex items-center justify-center mx-auto mb-4">
+            <Sparkles className="size-6" />
+          </div>
+          <h1 className="text-2xl font-bold font-display tracking-tight text-foreground">Check your email</h1>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            We sent a secure confirmation link to <span className="font-bold text-foreground">{email}</span>. Click it to finish setting up your account.
           </p>
-          <Button variant="outline" className="mt-6 w-full rounded-full h-11" onClick={() => setSent(false)}>
-            Back
+          <Button variant="outline" className="mt-6 w-full rounded-full font-bold text-xs" onClick={() => setSent(false)}>
+            Back to Sign In
           </Button>
         </div>
       </main>
@@ -98,30 +97,58 @@ function AuthPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-teal-50/30 px-5 py-10 relative overflow-hidden">
-      {/* Subtle Ambient Background Elements */}
-      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-orange-400/10 blur-[80px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 h-[600px] w-[600px] rounded-full bg-teal-400/10 blur-[100px] pointer-events-none z-0" />
-      
+    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-12 relative overflow-hidden text-foreground selection:bg-primary/20">
+      {/* Ambient Lighting */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-coral/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-cyan/15 blur-[130px]" />
+
       <div className="relative z-10 w-full max-w-sm">
-        <Link to="/" className="inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors mb-2">
-          &larr; Back home
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors mb-4 rounded-full bg-secondary/80 px-3 py-1 border border-border/40"
+        >
+          <ArrowLeft className="size-3.5" /> Back to Safr Home
         </Link>
-        <div className="mt-2 rounded-3xl border border-border/50 bg-card/60 p-8 shadow-xl backdrop-blur-xl">
-          <h1 className="text-2xl font-bold tracking-tight">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            {mode === "signin" ? "Sign in to pick up your trip." : "One account for your whole trip."}
+
+        <div className="rounded-3xl border border-border/60 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 shadow-2xl">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="size-10 rounded-2xl bg-gradient-to-br from-primary via-cyan to-coral flex items-center justify-center shadow-sm">
+              <Compass className="size-5 text-primary-foreground" />
+            </div>
+            <div>
+              <span className="text-xl font-bold font-display tracking-tight">Safr</span>
+              <span className="ml-1 text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Goa</span>
+            </div>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-bold font-display tracking-tight text-foreground">
+            {mode === "signin" ? "Welcome back" : "Create account"}
+          </h1>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {mode === "signin" ? "Sign in to access your Goa safety dashboard." : "One account to keep your family safe across India."}
           </p>
 
           <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
             {mode === "signup" && (
               <div className="space-y-1.5">
-                <Label htmlFor="name">Your name</Label>
-                <Input id="name" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} placeholder="Kaitlyn" />
+                <Label htmlFor="name" className="text-xs font-bold uppercase text-muted-foreground">
+                  Your Full Name
+                </Label>
+                <Input
+                  id="name"
+                  value={name}
+                  maxLength={60}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Kaitlyn D'Souza"
+                  className="rounded-xl bg-secondary/40 border-border/60"
+                />
               </div>
             )}
+
             <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email" className="text-xs font-bold uppercase text-muted-foreground">
+                Email Address
+              </Label>
               <Input
                 id="email"
                 type="email"
@@ -130,10 +157,14 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                className="rounded-xl bg-secondary/40 border-border/60"
               />
             </div>
+
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-xs font-bold uppercase text-muted-foreground">
+                Password
+              </Label>
               <Input
                 id="password"
                 type="password"
@@ -143,19 +174,31 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 6 characters"
+                className="rounded-xl bg-secondary/40 border-border/60"
               />
             </div>
-            <Button type="submit" className="w-full rounded-full h-11 text-base font-semibold shadow-md transition-all hover:scale-[1.02] active:scale-95 bg-gradient-to-r from-orange-500 to-rose-500 border-0 text-white" disabled={busy}>
-              {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+
+            <Button
+              type="submit"
+              className="w-full h-12 rounded-full font-bold bg-primary text-primary-foreground shadow-md transition-all hover:scale-[1.02] active:scale-95 mt-4"
+              disabled={busy}
+            >
+              {busy ? (
+                <Loader2 className="size-4 animate-spin mr-2" />
+              ) : mode === "signin" ? (
+                "Sign In"
+              ) : (
+                "Create Free Account"
+              )}
             </Button>
           </form>
 
           <button
             type="button"
-            className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground"
+            className="mt-5 w-full text-center text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
           >
-            {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+            {mode === "signin" ? "Don't have an account? Create one" : "Already registered? Sign in"}
           </button>
         </div>
       </div>

@@ -1,33 +1,27 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
-import { CheckCircle2, ShieldAlert, ShieldCheck } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { CheckCircle2, ShieldAlert, ShieldCheck, Phone, ArrowLeft, Send, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/t/$token")({
   head: () => ({
     meta: [
-      { title: "Found someone? — Safety tag" },
+      { title: "Found Someone? — Safety Tag Alert" },
       {
         name: "description",
         content: "This person is part of an active travel safety group. Notify their family without seeing any private details.",
       },
-      { property: "og:title", content: "Safety tag — Found someone?" },
+      { property: "og:title", content: "Safety Tag — Found Someone?" },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: TagPage,
 });
-
-// NOTE: this is the PUBLIC page a stranger lands on after scanning a
-// SafeTag QR or entering its code manually. It intentionally shows NO
-// personal data — no name, no address, no guardian phone number — only
-// a confirmation that the tag is active and a way to notify the family.
-// Full details are only ever visible to the guardian on their own
-// authenticated dashboard.
 
 const categoryLabel = (c: string) =>
   c === "senior" ? "an elderly traveller" : c === "kid" ? "a child" : "a traveller";
@@ -62,88 +56,135 @@ function TagPage() {
   });
 
   return (
-    <main className="flex min-h-screen items-start justify-center bg-gradient-to-br from-amber-50/40 via-orange-50/20 to-teal-50/30 relative overflow-hidden px-4 py-10">
-      {/* Subtle Ambient Background Elements */}
-      <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[500px] rounded-full bg-orange-400/10 blur-[80px] pointer-events-none z-0" />
-      <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 h-[600px] w-[600px] rounded-full bg-teal-400/10 blur-[100px] pointer-events-none z-0" />
-      
+    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12 relative overflow-hidden text-foreground selection:bg-primary/20">
+      {/* Ambient Lighting Blobs */}
+      <div className="pointer-events-none absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-emerald/15 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[600px] w-[600px] rounded-full bg-cyan/15 blur-[130px]" />
+
       <div className="relative z-10 w-full max-w-md">
-        {isLoading && <div className="h-56 animate-pulse rounded-2xl bg-secondary" />}
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors mb-4 rounded-full bg-secondary/80 px-3 py-1 border border-border/40"
+        >
+          <ArrowLeft className="size-3.5" /> Back to Safr Home
+        </Link>
+
+        {isLoading && <div className="h-64 rounded-3xl shimmer-skeleton border border-border/60" />}
 
         {(isError || (!isLoading && !data)) && (
-          <div className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl p-8 text-center shadow-lg">
-            <ShieldAlert className="mx-auto size-10 text-muted-foreground" />
-            <h1 className="mt-4 text-xl font-bold tracking-tight">This tag isn't active</h1>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              If someone needs help right now, dial 112 for emergency services in India.
+          <div className="rounded-3xl border border-border/60 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 text-center shadow-2xl">
+            <ShieldAlert className="mx-auto size-12 text-destructive" />
+            <h1 className="mt-4 text-2xl font-bold font-display tracking-tight">Tag Not Found or Inactive</h1>
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              This safety tag OTP code is not registered or has expired. If someone needs urgent assistance in Goa, dial emergency services immediately.
             </p>
-            <a
-              href="tel:112"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-destructive px-4 py-3 font-semibold text-destructive-foreground shadow-sm hover:opacity-90 transition-opacity"
-            >
-              Call 112
-            </a>
+            <div className="mt-6 space-y-2">
+              <a
+                href="tel:112"
+                className="inline-flex w-full items-center justify-center rounded-full bg-destructive px-4 py-3.5 text-sm font-bold text-destructive-foreground shadow-md hover:opacity-90 transition-opacity"
+              >
+                <Phone className="size-4 mr-2" /> Call Goa Police (112)
+              </a>
+              <a
+                href="tel:1098"
+                className="inline-flex w-full items-center justify-center rounded-full bg-secondary px-4 py-3 text-xs font-bold text-foreground hover:bg-secondary/80 transition-colors"
+              >
+                Call National Childline (1098)
+              </a>
+            </div>
           </div>
         )}
 
         {data && !sent && (
-          <div className="space-y-4">
-            <div className="rounded-3xl border-l-4 border-l-primary/60 border border-border/50 bg-card/60 backdrop-blur-xl p-6 shadow-lg">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="size-5 text-primary" />
-                <p className="font-semibold">Active safety tag</p>
+          <div className="rounded-3xl border border-border/60 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 shadow-2xl">
+            <div className="flex items-center gap-2.5">
+              <div className="size-10 rounded-2xl bg-emerald/10 text-emerald flex items-center justify-center shrink-0">
+                <ShieldCheck className="size-6" />
               </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                You've found {categoryLabel(data.category)} who is part of an active travel
-                safety group. Their family's contact details are kept private — tap below to
-                notify them directly.
-              </p>
+              <div>
+                <span className="rounded-full bg-emerald/10 text-emerald px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">
+                  Verified Active Tag
+                </span>
+                <h2 className="text-xl font-bold font-display text-foreground mt-0.5">
+                  SafeTag Code: {token}
+                </h2>
+              </div>
             </div>
 
-            <div className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl p-6 shadow-lg">
-              <label className="text-sm font-semibold">Where are you / any details? (optional)</label>
-              <Textarea
-                className="mt-2 bg-background/50 border-border/50 shadow-inner rounded-xl"
-                placeholder="e.g. Near the Baga Beach lifeguard tower"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                maxLength={300}
-              />
-              <label className="mt-4 block text-sm font-semibold">Your phone number (optional)</label>
-              <input
-                type="tel"
-                className="mt-2 w-full rounded-xl border border-border/50 bg-background/50 shadow-inner px-4 py-2.5 text-sm"
-                placeholder="So the family can call you back"
-                value={contact}
-                onChange={(e) => setContact(e.target.value)}
-                maxLength={20}
-              />
-              <Button
-                className="mt-6 w-full rounded-full h-12 text-base font-semibold shadow-md transition-all hover:scale-[1.02] active:scale-95 bg-gradient-to-r from-orange-500 to-rose-500 border-0 text-white"
-                disabled={notify.isPending}
-                onClick={() => notify.mutate()}
-              >
-                {notify.isPending ? "Notifying…" : "Notify Family"}
-              </Button>
-            </div>
+            <p className="mt-4 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              You've found <strong>{categoryLabel(data.category)}</strong> registered with an active travel group in Goa.
+              Guardian contact details are kept strictly private to protect traveler security. Tap below to send them an instant location and status alert.
+            </p>
 
-            <a
-              href="tel:112"
-              className="flex items-center justify-center gap-2 rounded-full border border-destructive/50 bg-destructive/5 px-4 py-3 font-semibold text-destructive hover:bg-destructive/10 transition-colors"
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                notify.mutate();
+              }}
+              className="mt-6 space-y-4"
             >
-              Emergency services — 112
-            </a>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase text-muted-foreground">
+                  Where are you right now? (Optional)
+                </label>
+                <Textarea
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="e.g. Near Tito's Lane entrance, Baga Beach. Sitting safely with lifeguards."
+                  rows={3}
+                  className="rounded-2xl bg-secondary/40 border-border/60 text-xs sm:text-sm resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase text-muted-foreground">
+                  Your Phone / Contact Info (Optional)
+                </label>
+                <Input
+                  value={contact}
+                  onChange={(e) => setContact(e.target.value)}
+                  placeholder="e.g. +91 98765 43210 (Shopkeeper/Finder)"
+                  className="rounded-2xl bg-secondary/40 border-border/60 text-xs sm:text-sm"
+                />
+              </div>
+
+              <Button
+                type="submit"
+                disabled={notify.isPending}
+                className="w-full h-14 rounded-full font-bold text-base bg-gradient-to-r from-emerald to-teal-600 text-white shadow-lg shadow-emerald/20 hover:scale-[1.02] active:scale-95 transition-all mt-4"
+              >
+                {notify.isPending ? (
+                  <>
+                    <Loader2 className="size-4 animate-spin mr-2" /> Alerting Family…
+                  </>
+                ) : (
+                  <>
+                    <Send className="size-4 mr-2" /> Send Alert to Guardian
+                  </>
+                )}
+              </Button>
+            </form>
           </div>
         )}
 
         {sent && (
-          <div className="rounded-3xl border border-border/50 bg-card/60 backdrop-blur-xl p-8 text-center shadow-lg">
-            <CheckCircle2 className="mx-auto size-12 text-green-500" />
-            <h1 className="mt-4 text-2xl font-bold tracking-tight">Family notified</h1>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              Thank you — their family has been alerted. If this is urgent, please stay nearby
-              and dial 112 for immediate help.
+          <div className="rounded-3xl border border-emerald/30 bg-card/85 backdrop-blur-2xl p-8 sm:p-10 text-center shadow-2xl animate-in zoom-in-95 duration-300">
+            <div className="mx-auto size-16 rounded-full bg-emerald/15 text-emerald flex items-center justify-center mb-4">
+              <CheckCircle2 className="size-10" />
+            </div>
+
+            <h2 className="text-2xl font-bold font-display text-foreground">
+              Guardian Alerted!
+            </h2>
+
+            <p className="mt-2 text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Thank you! An urgent notification with your message has been sent to the traveler's registered family dashboard.
+              Please stay with them in a safe, well-lit area until help arrives.
             </p>
+
+            <div className="mt-6 pt-5 border-t border-border/40 text-xs text-muted-foreground">
+              If immediate medical or police assistance is needed, please call <a href="tel:112" className="font-bold text-destructive underline">112</a>.
+            </div>
           </div>
         )}
       </div>

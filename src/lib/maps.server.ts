@@ -26,11 +26,33 @@ export async function searchGoaPlaces(query: string): Promise<PlaceHit[]> {
   }));
 }
 
+export type OSRMStep = {
+  name: string;
+  distance: number;
+  duration: number;
+  maneuver: {
+    type: string;
+    modifier?: string;
+    location?: [number, number]; // [lng, lat]
+    exit?: number;
+  };
+};
+
 type OSRMRoute = {
   distance: number;
   duration: number;
   geometry: { coordinates: [number, number][] };
-  legs: Array<{ summary?: string; steps?: Array<{ name: string; maneuver: { type: string } }> }>;
+  legs: Array<{ summary?: string; steps?: OSRMStep[] }>;
+};
+
+export type RouteStep = {
+  instruction: string;
+  distanceMeters: number;
+  durationSeconds: number;
+  maneuverType: string;
+  maneuverModifier?: string | undefined;
+  name: string;
+  location?: [number, number] | undefined; // [lat, lng]
 };
 
 export type ScoredRoute = {
@@ -42,17 +64,62 @@ export type ScoredRoute = {
   reasons: string[];
   polyline: string;
   summary: string;
+  steps: RouteStep[];
+  googleMapsUrl: string;
 };
+
+function formatManeuverInstruction(step: OSRMStep): string {
+  const name = step.name && step.name.trim().length > 0 ? step.name : "the road";
+  const modifier = step.maneuver.modifier ? step.maneuver.modifier.replace("-", " ") : "";
+  const type = step.maneuver.type;
+
+  switch (type) {
+    case "depart":
+      return `Head ${modifier || "forward"} on ${name}`;
+    case "arrive":
+      return `Arrive at your destination`;
+    case "turn":
+      return `Turn ${modifier || "ahead"} onto ${name}`;
+    case "roundabout":
+    case "rotary":
+      return step.maneuver.exit
+        ? `At the roundabout, take exit ${step.maneuver.exit} onto ${name}`
+        : `Enter the roundabout and take exit onto ${name}`;
+    case "fork":
+      return `Take the ${modifier || "next"} fork onto ${name}`;
+    case "merge":
+      return `Merge ${modifier || ""} onto ${name}`;
+    case "on ramp":
+      return `Take the ramp onto ${name}`;
+    case "off ramp":
+      return `Take the exit onto ${name}`;
+    case "end of road":
+      return `Turn ${modifier || ""} at the end of the road onto ${name}`;
+    case "continue":
+    case "new name":
+    default:
+      return modifier && modifier !== "straight"
+        ? `Make a ${modifier} onto ${name}`
+        : `Continue along ${name}`;
+  }
+}
 
 const RISKY_ROAD = /(NH ?\d+|national highway|bypass|ghat|hairpin)/i;
 const CALM_ROAD = /(village|market|town|road through|main road)/i;
 
-function scoreRoute(route: OSRMRoute, fastestMin: number, isNight: boolean, isAlternative = false) {
+function scoreRoute(
+  route: OSRMRoute,
+  fastestMin: number,
+  isNight: boolean,
+  origin: { lat: number; lng: number },
+  destination: { lat: number; lng: number },
+  isAlternative = false,
+) {
   const durationMin = Math.round((route.duration ?? 0) / 60);
   const distanceKm = Math.round(((route.distance ?? 0) / 1000) * 10) / 10;
   
-  const steps = route.legs?.flatMap(l => l.steps ?? []) ?? [];
-  const text = steps.map(s => s.name).filter(Boolean).join(" ");
+  const rawSteps = route.legs?.flatMap(l => l.steps ?? []) ?? [];
+  const text = rawSteps.map(s => s.name).filter(Boolean).join(" ");
 
   const reasons: string[] = [];
   let score = 75;
@@ -107,13 +174,28 @@ function scoreRoute(route: OSRMRoute, fastestMin: number, isNight: boolean, isAl
     score += 6;
   }
 
+  // Format structured step-by-step instructions
+  const steps: RouteStep[] = rawSteps.map((s) => ({
+    instruction: formatManeuverInstruction(s),
+    distanceMeters: Math.round(s.distance ?? 0),
+    durationSeconds: Math.round(s.duration ?? 0),
+    maneuverType: s.maneuver.type ?? "continue",
+    maneuverModifier: s.maneuver.modifier,
+    name: s.name || "Road",
+    location: s.maneuver.location ? [s.maneuver.location[1], s.maneuver.location[0]] : undefined, // [lat, lng]
+  }));
+
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+
   return {
     durationMin,
     distanceKm,
     safetyScore: Math.max(30, Math.min(98, Math.round(score))),
     reasons,
-    summary: route.legs?.[0]?.summary || steps.find(s => s.name)?.name || "Local Road Route",
+    summary: route.legs?.[0]?.summary || rawSteps.find(s => s.name)?.name || "Local Road Route",
     polyline: JSON.stringify(route.geometry.coordinates.map(c => [c[1], c[0]])),
+    steps,
+    googleMapsUrl,
   };
 }
 
@@ -165,7 +247,7 @@ export async function computeSafeRoutes(
   const fastestIndex = durations.indexOf(fastestMin);
 
   // Score all routes, identifying alternative routes
-  const scored = raw.map((r, i) => scoreRoute(r, fastestMin, isNight, i !== fastestIndex));
+  const scored = raw.map((r, i) => scoreRoute(r, fastestMin, isNight, origin, destination, i !== fastestIndex));
 
   // Pick the safer route from routes distinct from fastest
   let saferIndex = -1;
