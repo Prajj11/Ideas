@@ -134,4 +134,3 @@ For the comprehensive 500+ line technical blueprint covering all database schema
 
 ## 📜 License
 
-This project is proprietary and developed for the Safr Smart Tourism Initiative.
