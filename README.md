@@ -1,26 +1,5 @@
 # 🌴 Safr (Goa Guide Buddy) — AI Travel Safety Companion
 
-<p align="center">
-  <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?q=80&w=1200&auto=format&fit=crop" alt="Safr Goa Guide Banner" width="100%" style="border-radius: 20px; max-height: 380px; object-fit: cover;" />
-</p>
-
-<p align="center">
-  <strong>Piloted in Goa · Engineered for India</strong><br>
-  <em>"Travel safer. Skip the trouble."</em>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/React-19.0.0-61DAFB?style=flat-square&logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/TypeScript-5.7-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" />
-  <img src="https://img.shields.io/badge/TanStack_Start-Router_v1-FF4154?style=flat-square&logo=tanstack&logoColor=white" alt="TanStack Start" />
-  <img src="https://img.shields.io/badge/TailwindCSS-v4.0-38B2AC?style=flat-square&logo=tailwindcss&logoColor=white" alt="TailwindCSS v4" />
-  <img src="https://img.shields.io/badge/Supabase-PostgreSQL_%26_Auth-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Google_Gemini-2.5_Flash_AI-4285F4?style=flat-square&logo=google&logoColor=white" alt="Gemini AI" />
-  <img src="https://img.shields.io/badge/License-Proprietary-orange?style=flat-square" alt="License" />
-</p>
-
----
-
 ## 📖 Overview
 
 **Safr** is an intelligent, full-stack travel safety companion web application engineered to solve real-world tourism and security challenges across India, currently piloted in Goa. 
